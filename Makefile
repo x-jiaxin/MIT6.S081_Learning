@@ -191,6 +191,8 @@ UPROGS=\
 	$U/_open\
 	$U/_sleep\
 	$U/_iodemo\
+	$U/_pingpong\
+	$U/_primes\
 
 
 
