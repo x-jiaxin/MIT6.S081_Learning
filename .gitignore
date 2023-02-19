@@ -24,6 +24,5 @@ ph
 barrier
 /lab-*.json
 .DS_Store
-/.idea
-/.clang-format
-/.vscode
+# /.clang-format
+# /.vscode
