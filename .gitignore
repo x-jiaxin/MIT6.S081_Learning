@@ -14,7 +14,7 @@ kernelmemfs
 mkfs
 kernel/kernel
 user/usys.S
-#.gdbinit
+.gdbinit
 myapi.key
 *-handin.tar.gz
 xv6.out*
