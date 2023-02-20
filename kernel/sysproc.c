@@ -5,6 +5,7 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "sysinfo.h"
 
 uint64
 sys_exit(void)
@@ -99,5 +100,21 @@ sys_trace(void)
     argint(0, &n);//从a0寄存器取参数值
     // printf("argv: %d\n", n);
     myproc()->syscall_mask = n;
+    return 0;
+}
+
+uint64
+sys_sysinfo(void)
+{
+    //    printf("SYS_sysinfo called successfully!\n");
+    uint64 sysinfo_addr;
+    argaddr(0, &sysinfo_addr);
+    struct sysinfo si = {};
+    si.nproc = get_active_proc();
+    si.freemem = get_free_mem();
+    printf("freemem: %d,", si.freemem);
+    printf("nproc: %d\n", si.nproc);
+    if (copyout(myproc()->pagetable, sysinfo_addr, (char *)&si, sizeof(si)) < 0)
+        return -1;
     return 0;
 }

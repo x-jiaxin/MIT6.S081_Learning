@@ -663,3 +663,15 @@ void procdump(void)
         printf("\n");
     }
 }
+
+int get_active_proc()
+{
+    int num = 0;
+    for (int i = 0; i < NPROC; i++) {
+
+        if (proc[i].state != UNUSED) {
+            num++;
+        }
+    }
+    return num;
+}
