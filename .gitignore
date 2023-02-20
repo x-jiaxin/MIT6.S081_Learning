@@ -25,3 +25,5 @@ barrier
 /lab-*.json
 .DS_Store
 /.vscode
+/.idea
+/time.txt
