@@ -543,5 +543,9 @@
         "readability-uppercase-literal-suffix",
         "readability-use-anyofallof",
         "zircon-temporary-objects"
-    ]
+    ],
+    "files.associations": {
+        "stat.h": "c",
+        "types.h": "c"
+    }
 }

@@ -193,6 +193,8 @@ UPROGS=\
 	$U/_iodemo\
 	$U/_pingpong\
 	$U/_primes\
+	$U/_file_demo\
+	$U/_find\
 
 
 

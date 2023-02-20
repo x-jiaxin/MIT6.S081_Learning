@@ -26,3 +26,4 @@ barrier
 .DS_Store
 # /.clang-format
 # /.vscode
+ /.idea
