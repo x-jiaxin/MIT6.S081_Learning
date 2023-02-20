@@ -25,6 +25,6 @@ barrier
 /lab-*.json
 .DS_Store
 # /.clang-format
-# /.vscode
+ /.vscode
 /.idea
 /time.txt
