@@ -166,7 +166,7 @@ freeproc(struct proc *p)
     p->killed = 0;
     p->xstate = 0;
     p->state = UNUSED;
-    p->syscall_mask = 0;
+    //    p->syscall_mask = 0;
 }
 
 // Create a user page table for a given process, with no user memory,
@@ -668,7 +668,6 @@ int get_active_proc()
 {
     int num = 0;
     for (int i = 0; i < NPROC; i++) {
-
         if (proc[i].state != UNUSED) {
             num++;
         }
