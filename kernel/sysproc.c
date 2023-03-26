@@ -91,3 +91,8 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+void sys_myt(){
+  struct proc *p = myproc();
+  printf("%lu\n", p->trapframe->kernel_trap);
+}
