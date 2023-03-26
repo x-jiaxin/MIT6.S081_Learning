@@ -33,6 +33,8 @@ pagetable_t kvmmake(void)
     kvmmap(kpgtbl, PLIC, PLIC, 0x400000, PTE_R | PTE_W);
 
     // map kernel text executable and read-only.
+//    printf("etext: %llu\n", (uint64)(*etext));
+    printf("etext:%p\n", etext);
     kvmmap(kpgtbl, KERNBASE, KERNBASE, (uint64)etext - KERNBASE, PTE_R | PTE_X);
 
     // map kernel data and the physical RAM we'll make use of.
@@ -41,6 +43,7 @@ pagetable_t kvmmake(void)
 
     // map the trampoline for trap entry/exit to
     // the highest virtual address in the kernel.
+    printf("trampoline:%p\n",trampoline);
     kvmmap(kpgtbl, TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_R | PTE_X);
 
     // allocate and map a kernel stack for each process.

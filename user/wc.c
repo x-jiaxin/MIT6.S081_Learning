@@ -37,7 +37,7 @@ int
 main(int argc, char *argv[])
 {
   int fd, i;
-
+  printf("&fd: %p\n",&fd);
   if(argc <= 1){
     wc(0, "");
     exit(0);

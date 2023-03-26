@@ -27,6 +27,7 @@ void
 kinit()
 {
   initlock(&kmem.lock, "kmem");
+  printf("end:%p\n", end);
   freerange(end, (void*)PHYSTOP);
 }
 
