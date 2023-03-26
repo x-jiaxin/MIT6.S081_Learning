@@ -94,5 +94,6 @@ sys_uptime(void)
 
 void sys_myt(){
   struct proc *p = myproc();
-  printf("%lu\n", p->trapframe->kernel_trap);
+  printf("kernel_trap:%p\n", (void*)p->trapframe->kernel_trap);
+
 }
