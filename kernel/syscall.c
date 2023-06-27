@@ -102,16 +102,16 @@ extern uint64 sys_sysinfo(void);
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
 static uint64 (*syscalls[])(void) = {
-        [SYS_fork] sys_fork,
-        [SYS_exit] sys_exit,
+        [SYS_fork] = sys_fork,
+        [SYS_exit] = sys_exit,
         [SYS_wait] sys_wait,
-        [SYS_pipe] sys_pipe,
-        [SYS_read] sys_read,
-        [SYS_kill] sys_kill,
-        [SYS_exec] sys_exec,
-        [SYS_fstat] sys_fstat,
+        [SYS_pipe] = sys_pipe,
+        [SYS_read] = sys_read,
+        [SYS_kill] = sys_kill,
+        [SYS_exec] = sys_exec,
+        [SYS_fstat] = sys_fstat,
         [SYS_chdir] sys_chdir,
-        [SYS_dup] sys_dup,
+        [SYS_dup] = sys_dup,
         [SYS_getpid] sys_getpid,
         [SYS_sbrk] sys_sbrk,
         [SYS_sleep] sys_sleep,
@@ -153,6 +153,7 @@ void syscall(void)
     int num;
     struct proc *p = myproc();
     num = p->trapframe->a7;
+    //    num = *(int*)0;
     //    printf("syscall name: %s\n", syscall_name[num - 1]);
     if (num > 0 && num < NELEM(syscalls) && syscalls[num]) {
         // Use num to look up the system call function for num, call it,
