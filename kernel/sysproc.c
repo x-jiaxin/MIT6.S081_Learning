@@ -54,9 +54,7 @@ uint64 sys_sleep(void)
     release(&tickslock);
     return 0;
 }
-//todo 2. accomplish sys_ogaccess()
 
-//todo 5. Setting the Upper Limit on the Number of Scanned Pages.
 #ifdef LAB_PGTBL
 int sys_pgaccess(void)
 {

@@ -35,10 +35,10 @@ void proc_mapstacks(pagetable_t kpgtbl)
 
     for (p = proc; p < &proc[NPROC]; p++) {
         char *pa = kalloc();
-        if (pa == 0)
-            panic("kalloc");
+        if (pa == 0) panic("kalloc");
         uint64 va = KSTACK((int)(p - proc));
         kvmmap(kpgtbl, va, (uint64)pa, PGSIZE, PTE_R | PTE_W);
+        //        printf("%p\n", pa);
     }
 }
 
@@ -67,8 +67,7 @@ int cpuid()
 
 // Return this CPU's cpu struct.
 // Interrupts must be disabled.
-struct cpu *
-mycpu(void)
+struct cpu *mycpu(void)
 {
     int id = cpuid();
     struct cpu *c = &cpus[id];
@@ -76,8 +75,7 @@ mycpu(void)
 }
 
 // Return the current struct proc *, or zero if none.
-struct proc *
-myproc(void)
+struct proc *myproc(void)
 {
     push_off();
     struct cpu *c = mycpu();
@@ -102,16 +100,13 @@ int allocpid()
 // If found, initialize state required to run in the kernel,
 // and return with p->lock held.
 // If there are no free procs, or a memory allocation fails, return 0.
-static struct proc *
-allocproc(void)
+static struct proc *allocproc(void)
 {
     struct proc *p;
 
     for (p = proc; p < &proc[NPROC]; p++) {
         acquire(&p->lock);
-        if (p->state == UNUSED) {
-            goto found;
-        }
+        if (p->state == UNUSED) { goto found; }
         else {
             release(&p->lock);
         }
@@ -156,19 +151,15 @@ found:
 // free a proc structure and the data hanging from it,
 // including user pages.
 // p->lock must be held.
-static void
-freeproc(struct proc *p)
+static void freeproc(struct proc *p)
 {
-    if (p->trapframe)
-        kfree((void *)p->trapframe);
+    if (p->trapframe) kfree((void *)p->trapframe);
     p->trapframe = 0;
 
-    if (p->syscall_page)
-        kfree((void *)p->syscall_page);
+    if (p->syscall_page) kfree((void *)p->syscall_page);
     p->syscall_page = 0;
 
-    if (p->pagetable)
-        proc_freepagetable(p->pagetable, p->sz);
+    if (p->pagetable) proc_freepagetable(p->pagetable, p->sz);
     p->pagetable = 0;
     p->sz = 0;
     p->pid = 0;
@@ -182,37 +173,35 @@ freeproc(struct proc *p)
 
 // Create a user page table for a given process, with no user memory,
 // but with trampoline and trapframe pages.
-pagetable_t
-proc_pagetable(struct proc *p)
+pagetable_t proc_pagetable(struct proc *p)
 {
     pagetable_t pagetable;
 
     // An empty page table.
     pagetable = uvmcreate();
-    if (pagetable == 0)
-        return 0;
+    if (pagetable == 0) return 0;
 
     // map the trampoline code (for system call return)
     // at the highest user virtual address.
     // only the supervisor uses it, on the way
     // to/from user space, so not PTE_U.
-    if (mappages(pagetable, TRAMPOLINE, PGSIZE,
-                 (uint64)trampoline, PTE_R | PTE_X) < 0) {
+    if (mappages(pagetable, TRAMPOLINE, PGSIZE, (uint64)trampoline, PTE_R | PTE_X) <
+        0) {
         uvmfree(pagetable, 0);
         return 0;
     }
 
     // map the trapframe page just below the trampoline page, for
     // trampoline.S.
-    if (mappages(pagetable, TRAPFRAME, PGSIZE,
-                 (uint64)(p->trapframe), PTE_R | PTE_W) < 0) {
+    if (mappages(pagetable, TRAPFRAME, PGSIZE, (uint64)(p->trapframe),
+                 PTE_R | PTE_W) < 0) {
         uvmunmap(pagetable, TRAMPOLINE, 1, 0);
         uvmfree(pagetable, 0);
         return 0;
     }
-
-    if (mappages(pagetable, USYSCALL, PGSIZE,
-                 (uint64)(p->syscall_page), PTE_R | PTE_U) < 0) {
+    //lab3
+    if (mappages(pagetable, USYSCALL, PGSIZE, (uint64)(p->syscall_page),
+                 PTE_R | PTE_U) < 0) {
         uvmunmap(pagetable, TRAMPOLINE, 1, 0);
         uvmunmap(pagetable, TRAPFRAME, 1, 0);
         uvmfree(pagetable, 0);
@@ -235,14 +224,11 @@ void proc_freepagetable(pagetable_t pagetable, uint64 sz)
 // a user program that calls exec("/init")
 // assembled from ../user/initcode.S
 // od -t xC ../user/initcode
-uchar initcode[] = {
-        0x17, 0x05, 0x00, 0x00, 0x13, 0x05, 0x45, 0x02,
-        0x97, 0x05, 0x00, 0x00, 0x93, 0x85, 0x35, 0x02,
-        0x93, 0x08, 0x70, 0x00, 0x73, 0x00, 0x00, 0x00,
-        0x93, 0x08, 0x20, 0x00, 0x73, 0x00, 0x00, 0x00,
-        0xef, 0xf0, 0x9f, 0xff, 0x2f, 0x69, 0x6e, 0x69,
-        0x74, 0x00, 0x00, 0x24, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00};
+uchar initcode[] = {0x17, 0x05, 0x00, 0x00, 0x13, 0x05, 0x45, 0x02, 0x97, 0x05, 0x00,
+                    0x00, 0x93, 0x85, 0x35, 0x02, 0x93, 0x08, 0x70, 0x00, 0x73, 0x00,
+                    0x00, 0x00, 0x93, 0x08, 0x20, 0x00, 0x73, 0x00, 0x00, 0x00, 0xef,
+                    0xf0, 0x9f, 0xff, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x00, 0x00, 0x24,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 // Set up first user process.
 void userinit(void)
@@ -278,9 +264,7 @@ int growproc(int n)
 
     sz = p->sz;
     if (n > 0) {
-        if ((sz = uvmalloc(p->pagetable, sz, sz + n, PTE_W)) == 0) {
-            return -1;
-        }
+        if ((sz = uvmalloc(p->pagetable, sz, sz + n, PTE_W)) == 0) { return -1; }
     }
     else if (n < 0) {
         sz = uvmdealloc(p->pagetable, sz, sz + n);
@@ -298,9 +282,7 @@ int fork(void)
     struct proc *p = myproc();
 
     // Allocate process.
-    if ((np = allocproc()) == 0) {
-        return -1;
-    }
+    if ((np = allocproc()) == 0) { return -1; }
 
     // Copy user memory from parent to child.
     if (uvmcopy(p->pagetable, np->pagetable, p->sz) < 0) {
@@ -318,8 +300,7 @@ int fork(void)
 
     // increment reference counts on open file descriptors.
     for (i = 0; i < NOFILE; i++)
-        if (p->ofile[i])
-            np->ofile[i] = filedup(p->ofile[i]);
+        if (p->ofile[i]) np->ofile[i] = filedup(p->ofile[i]);
     np->cwd = idup(p->cwd);
 
     safestrcpy(np->name, p->name, sizeof(p->name));
@@ -360,8 +341,7 @@ void exit(int status)
 {
     struct proc *p = myproc();
 
-    if (p == initproc)
-        panic("init exiting");
+    if (p == initproc) panic("init exiting");
 
     // Close all open files.
     for (int fd = 0; fd < NOFILE; fd++) {
@@ -493,14 +473,10 @@ void sched(void)
     int intena;
     struct proc *p = myproc();
 
-    if (!holding(&p->lock))
-        panic("sched p->lock");
-    if (mycpu()->noff != 1)
-        panic("sched locks");
-    if (p->state == RUNNING)
-        panic("sched running");
-    if (intr_get())
-        panic("sched interruptible");
+    if (!holding(&p->lock)) panic("sched p->lock");
+    if (mycpu()->noff != 1) panic("sched locks");
+    if (p->state == RUNNING) panic("sched running");
+    if (intr_get()) panic("sched interruptible");
 
     intena = mycpu()->intena;
     swtch(&p->context, &mycpu()->context);
@@ -576,9 +552,7 @@ void wakeup(void *chan)
     for (p = proc; p < &proc[NPROC]; p++) {
         if (p != myproc()) {
             acquire(&p->lock);
-            if (p->state == SLEEPING && p->chan == chan) {
-                p->state = RUNNABLE;
-            }
+            if (p->state == SLEEPING && p->chan == chan) { p->state = RUNNABLE; }
             release(&p->lock);
         }
     }
@@ -630,9 +604,7 @@ int killed(struct proc *p)
 int either_copyout(int user_dst, uint64 dst, void *src, uint64 len)
 {
     struct proc *p = myproc();
-    if (user_dst) {
-        return copyout(p->pagetable, dst, src, len);
-    }
+    if (user_dst) { return copyout(p->pagetable, dst, src, len); }
     else {
         memmove((char *)dst, src, len);
         return 0;
@@ -645,9 +617,7 @@ int either_copyout(int user_dst, uint64 dst, void *src, uint64 len)
 int either_copyin(void *dst, int user_src, uint64 src, uint64 len)
 {
     struct proc *p = myproc();
-    if (user_src) {
-        return copyin(p->pagetable, dst, src, len);
-    }
+    if (user_src) { return copyin(p->pagetable, dst, src, len); }
     else {
         memmove(dst, (char *)src, len);
         return 0;
@@ -660,19 +630,14 @@ int either_copyin(void *dst, int user_src, uint64 src, uint64 len)
 void procdump(void)
 {
     static char *states[] = {
-            [UNUSED] "unused",
-            [USED] "used",
-            [SLEEPING] "sleep ",
-            [RUNNABLE] "runble",
-            [RUNNING] "run   ",
-            [ZOMBIE] "zombie"};
+            [UNUSED] "unused",   [USED] "used",      [SLEEPING] "sleep ",
+            [RUNNABLE] "runble", [RUNNING] "run   ", [ZOMBIE] "zombie"};
     struct proc *p;
     char *state;
 
     printf("\n");
     for (p = proc; p < &proc[NPROC]; p++) {
-        if (p->state == UNUSED)
-            continue;
+        if (p->state == UNUSED) continue;
         if (p->state >= 0 && p->state < NELEM(states) && states[p->state])
             state = states[p->state];
         else

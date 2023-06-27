@@ -34,18 +34,15 @@ void ugetpid_test()
         int ret = fork();
         if (ret != 0) {
             wait(&ret);
-            if (ret != 0)
-                exit(1);
+            if (ret != 0) exit(1);
             continue;
         }
-        if (getpid() != ugetpid())
-            err("missmatched PID");
+        if (getpid() != ugetpid()) err("missmatched PID");
         exit(0);
     }
     printf("ugetpid_test: OK\n");
 }
 
-// todo 1. read this function to learn how to use pgaccess
 void pgaccess_test()
 {
     char *buf;
@@ -53,17 +50,14 @@ void pgaccess_test()
     printf("pgaccess_test starting\n");
     testname = "pgaccess_test";
     buf = malloc(32 * PGSIZE);
-    if (pgaccess(buf, 32, &abits) < 0)
-        err("pgaccess failed");
+    if (pgaccess(buf, 32, &abits) < 0) err("pgaccess failed");
     //    第二页第一个字节置1
     buf[PGSIZE * 1] += 1;
     //     第三页第一个字节置1
     buf[PGSIZE * 2] += 1;
     buf[PGSIZE * 30] += 1;
-    if (pgaccess(buf, 32, &abits) < 0)
-        err("pgaccess failed");
-    if (abits != ((1 << 1) | (1 << 2) | (1 << 30)))
-        err("incorrect access bits set");
+    if (pgaccess(buf, 32, &abits) < 0) err("pgaccess failed");
+    if (abits != ((1 << 1) | (1 << 2) | (1 << 30))) err("incorrect access bits set");
     free(buf);
     printf("pgaccess_test: OK\n");
 }

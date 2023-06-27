@@ -33,17 +33,21 @@ pagetable_t kvmmake(void)
     kvmmap(kpgtbl, PLIC, PLIC, 0x400000, PTE_R | PTE_W);
 
     // map kernel text executable and read-only.
-//    printf("etext: %llu\n", (uint64)(*etext));
+    //    printf("etext: %llu\n", (uint64)(*etext));
     printf("etext:%p\n", etext);
+    printf("KERNBASE:%p\n", KERNBASE);
+    printf("PHYSTOP:%p\n", PHYSTOP);
     kvmmap(kpgtbl, KERNBASE, KERNBASE, (uint64)etext - KERNBASE, PTE_R | PTE_X);
 
     // map kernel data and the physical RAM we'll make use of.
+    printf("PHYSTOP - (uint64)etext: %d\n", (PHYSTOP - (uint64)etext) >> 20);
+
     kvmmap(kpgtbl, (uint64)etext, (uint64)etext, PHYSTOP - (uint64)etext,
            PTE_R | PTE_W);
 
     // map the trampoline for trap entry/exit to
     // the highest virtual address in the kernel.
-    printf("trampoline:%p\n",trampoline);
+    printf("trampoline va:%p\n", trampoline);
     kvmmap(kpgtbl, TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_R | PTE_X);
 
     // allocate and map a kernel stack for each process.
@@ -80,7 +84,6 @@ void kvminithart()
 //   21..29 -- 9 bits of level-1 index.
 //   12..20 -- 9 bits of level-0 index.
 //    0..11 -- 12 bits of byte offset within the page.
-//todo 6. walk() is useful for finding correct PTE.
 pte_t *walk(pagetable_t pagetable, uint64 va, int alloc)
 {
     if (va >= MAXVA) panic("walk");
@@ -311,7 +314,6 @@ void uvmclear(pagetable_t pagetable, uint64 va)
 // Copy from kernel to user.
 // Copy len bytes from src to virtual address dstva in a given page table.
 // Return 0 on success, -1 on error.
-//todo 4. can use copyout() to pass bit mask.
 int copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
 {
     uint64 n, va0, pa0;
