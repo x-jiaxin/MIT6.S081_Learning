@@ -190,6 +190,7 @@ UPROGS=\
 	$U/_zombie\
 	$U/_myt\
 	$U/_test_sbrk\
+	$U/_alarmtest\
 
 
 

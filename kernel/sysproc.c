@@ -38,7 +38,7 @@ uint64 sys_sbrk(void)
 
     argint(0, &n);
     addr = myproc()->sz;
-    myproc()->sz = myproc()->sz + n;
+    //    myproc()->sz = myproc()->sz + n;
     if (growproc(n) < 0)
         return -1;
     return addr;
@@ -92,4 +92,29 @@ void sys_myt()
 {
     struct proc *p = myproc();
     printf("kernel_trap:%p\n", (void *)p->trapframe->kernel_trap);
+}
+
+uint64 sys_sigalarm(void)
+{
+    printf("sys_sigalarm\n");
+    int tick;
+    uint64 funcaddr;
+    argint(0, &tick);
+    argaddr(1, &funcaddr);
+    //    printf("tick: %d\n", tick);
+    //    printf("funcaddr: %p\n", funcaddr);
+    struct proc *p = myproc();
+    p->alarm_interval = tick;
+    p->alarm_ticks = tick;
+    p->alarm_handler = funcaddr;
+    return 0;
+}
+uint64 sys_sigreturn(void)
+{
+    printf("sys_return\n");
+    struct proc *p = myproc();
+    *p->trapframe = *p->alarm_trapframe;
+    p->alarm_running = 0;
+    //    test3
+    return p->trapframe->a0;
 }
