@@ -71,7 +71,7 @@ void usertrap(void)
     else if (r_scause() == 15)
     {
         uint64 va = r_stval();
-        printf("page fault %p\n", va);
+        //        printf("page fault %p\n", va);
         uint64 pa = (uint64)kalloc();
         if (pa == 0)
         {
