@@ -681,3 +681,43 @@ procdump(void)
     printf("\n");
   }
 }
+
+int is_cow(pagetable_t pagetable,uint64 va)
+{
+  va = PGROUNDDOWN(va);
+  pte_t *pte = walk(pagetable, va, 0);
+  if(pte == 0)
+    return 0;
+  if((*pte & PTE_V) == 0)
+    return 0;
+  if((*pte & PTE_U) == 0)
+    return 0;
+  if (*pte & PTE_COW)
+  {
+    return 1;
+  }
+  return 0;
+}
+
+int do_cow(pagetable_t pagetable,uint64 va)
+{
+  va = PGROUNDDOWN(va);
+  pte_t *pte = walk(pagetable, va, 0);
+  int flags = PTE_FLAGS(*pte);
+  uint64 pa = PTE2PA(*pte);
+  uint64 ka = (uint64)kalloc();
+  if (ka == 0)
+  {
+    return -1;
+  }
+  memmove((void*)ka, (void*)pa, PGSIZE);
+  uvmunmap(pagetable, va, 1, 0);
+  flags |= PTE_W;
+  flags &= ~PTE_COW;
+  if (mappages(pagetable, va, PGSIZE, ka, flags) != 0)
+  {
+    kfree((void *)ka);
+    return -1;
+  }
+  return 0;
+}
