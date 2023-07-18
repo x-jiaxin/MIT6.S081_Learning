@@ -11,72 +11,97 @@
 
 void freerange(void *pa_start, void *pa_end);
 
-extern char end[]; // first address after kernel.
-                   // defined by kernel.ld.
+extern char end[];// first address after kernel.
+                  // defined by kernel.ld.
 
 struct run {
-  struct run *next;
+    struct run *next;
 };
 
 struct {
-  struct spinlock lock;
-  struct run *freelist;
+    struct spinlock lock;
+    struct run *freelist;
+    // 数组大小为页面数
+    int count[PHYSTOP / PGSIZE];
 } kmem;
 
-void
-kinit()
+void kinit()
 {
-  initlock(&kmem.lock, "kmem");
-  freerange(end, (void*)PHYSTOP);
+    initlock(&kmem.lock, "kmem");
+    freerange(end, (void *)PHYSTOP);
 }
 
-void
-freerange(void *pa_start, void *pa_end)
+void freerange(void *pa_start, void *pa_end)
 {
-  char *p;
-  p = (char*)PGROUNDUP((uint64)pa_start);
-  for(; p + PGSIZE <= (char*)pa_end; p += PGSIZE)
-    kfree(p);
+    char *p;
+    p = (char *)PGROUNDUP((uint64)pa_start);
+    for (; p + PGSIZE <= (char *)pa_end; p += PGSIZE)
+    {
+        //初始化为1，防止kfree里减到负数
+        kmem.count[getindex(p)] = 1;
+        kfree(p);
+    }
 }
 
 // Free the page of physical memory pointed at by pa,
 // which normally should have been returned by a
 // call to kalloc().  (The exception is when
 // initializing the allocator; see kinit above.)
-void
-kfree(void *pa)
+void kfree(void *pa)
 {
-  struct run *r;
+    struct run *r;
 
-  if(((uint64)pa % PGSIZE) != 0 || (char*)pa < end || (uint64)pa >= PHYSTOP)
-    panic("kfree");
+    if (((uint64)pa % PGSIZE) != 0 || (char *)pa < end || (uint64)pa >= PHYSTOP)
+        panic("kfree");
+    acquire(&kmem.lock);
 
-  // Fill with junk to catch dangling refs.
-  memset(pa, 1, PGSIZE);
+    //释放内存，计数减1
+    if (--kmem.count[getindex(pa)] == 0)
+    {
+        // Fill with junk to catch dangling refs.
+        memset(pa, 1, PGSIZE);
 
-  r = (struct run*)pa;
+        r = (struct run *)pa;
 
-  acquire(&kmem.lock);
-  r->next = kmem.freelist;
-  kmem.freelist = r;
-  release(&kmem.lock);
+        r->next = kmem.freelist;
+        kmem.freelist = r;
+    }
+    release(&kmem.lock);
 }
 
 // Allocate one 4096-byte page of physical memory.
 // Returns a pointer that the kernel can use.
 // Returns 0 if the memory cannot be allocated.
-void *
-kalloc(void)
+void *kalloc(void)
 {
-  struct run *r;
+    struct run *r;
 
-  acquire(&kmem.lock);
-  r = kmem.freelist;
-  if(r)
-    kmem.freelist = r->next;
-  release(&kmem.lock);
+    acquire(&kmem.lock);
+    r = kmem.freelist;
+    if (r)
+    {
+        kmem.freelist = r->next;
+        // 分配内存，初始页面计数为1
+        kmem.count[getindex(r)] = 1;
+    }
+    release(&kmem.lock);
 
-  if(r)
-    memset((char*)r, 5, PGSIZE); // fill with junk
-  return (void*)r;
+    if (r)
+        memset((char *)r, 5, PGSIZE);// fill with junk
+    return (void *)r;
+}
+
+uint64 getindex(void *p)
+{
+    return (uint64)p / PGSIZE;
+}
+
+void addcount(void *p)
+{
+    ++kmem.count[getindex(p)];
+}
+
+int getcount(void *p)
+{
+    return kmem.count[getindex(p)];
 }

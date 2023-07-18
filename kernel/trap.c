@@ -70,10 +70,11 @@ void usertrap(void)
     }
     else if (r_scause() == 15 || r_scause() == 13)
     {
+        //page fault
         uint64 va = r_stval();
         if (is_cow(p->pagetable, va))
         {
-            //      printf("is cow!\n");
+            //共享页面出现了写事件，需要分配页面
             if (do_cow(p->pagetable, va) != 0)
             {
                 printf("cow failed\n");
