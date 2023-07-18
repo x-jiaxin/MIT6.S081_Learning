@@ -692,6 +692,8 @@ void procdump(void)
 
 int is_cow(pagetable_t pagetable, uint64 va)
 {
+    if (va >= MAXVA)
+        return 0;
     va = PGROUNDDOWN(va);
     pte_t *pte = walk(pagetable, va, 0);
     if (pte == 0)
