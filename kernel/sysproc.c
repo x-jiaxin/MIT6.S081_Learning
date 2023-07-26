@@ -85,27 +85,3 @@ uint64 sys_uptime(void)
     release(&tickslock);
     return xticks;
 }
-
-uint64 sys_mmap(void)
-{
-    uint64 addr;
-    int length, prot, flags, fd, offset;
-    struct file *vfile;
-    //    printf("%p\n", err);
-    argaddr(0, &addr);
-    argint(1, &length);
-    argint(2, &prot);
-    argint(3, &flags);
-    argint(4, &fd);
-    argint(5, &offset);
-
-    if (addr != 0 || offset != 0 || length < 0)
-    {
-        return -1;
-    }
-}
-
-uint64 sys_munmap(void)
-{
-    return -1;
-}
